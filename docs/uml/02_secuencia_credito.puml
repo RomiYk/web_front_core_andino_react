@@ -1,0 +1,56 @@
+@startuml secuencia_credito
+title Los Andes — Secuencia: Solicitud de Crédito hasta Desembolso
+
+actor Cliente
+actor Asesor
+actor Comite as "Comité"
+participant "Frontend\n(React)" as FE
+participant "API Express\n(routes→controllers)" as API
+participant "creditoService" as SVC
+database "Supabase\n(solicitudes_prestamo)" as DB
+
+Cliente -> FE: Solicitar crédito (monto, plazo)
+FE -> API: POST /api/credito/solicitar
+API -> API: verificarToken + soloRol(cliente)
+API -> SVC: crearSolicitud(userId, monto, plazo)
+SVC -> SVC: calcularCuota()\ncalcularNivelAprobacion()
+SVC -> DB: INSERT solicitudes_prestamo (estado='pendiente')
+DB --> SVC: solicitud creada
+SVC --> API: solicitud
+API --> FE: 200 OK
+FE --> Cliente: "Solicitud enviada"
+
+== Evaluación ==
+Asesor -> FE: Ingresar ingreso/gasto familiar
+FE -> API: POST /api/credito/evaluacion
+API -> API: verificarToken + soloRol(asesor, admin)
+API -> SVC: registrarEvaluacion()
+SVC -> SVC: calcular RDS y Score
+SVC -> DB: UPDATE estado (aprobado_scoring | en_comite | rechazado_automatico)
+DB --> SVC: ok
+SVC --> API: solicitud actualizada
+API --> FE: 200 OK
+
+== Aprobación (Comité) ==
+Comite -> FE: Aprobar solicitud
+FE -> API: POST /api/credito/estado {estado:'aprobado'}
+API -> API: verificarToken + soloRol(comite, gerencia, admin)
+note right: un 'asesor' recibe 403\nno puede aprobar
+API -> SVC: actualizarEstado()
+SVC -> DB: UPDATE estado='aprobado'
+DB --> SVC: ok
+SVC --> API: solicitud
+API --> FE: 200 OK
+
+== Desembolso ==
+Comite -> FE: Desembolsar
+FE -> API: POST /api/credito/estado {estado:'desembolsado'}
+API -> SVC: actualizarEstado()
+SVC -> DB: UPDATE estado='desembolsado'
+SVC -> DB: UPDATE cuentas_ahorro SET saldo += monto
+SVC -> DB: INSERT movimientos_cuenta
+DB --> SVC: ok
+API --> FE: 200 OK
+FE --> Cliente: Saldo y movimiento reflejados en Homebanking
+
+@enduml

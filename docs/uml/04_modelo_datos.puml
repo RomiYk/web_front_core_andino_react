@@ -1,0 +1,81 @@
+@startuml modelo_datos
+title Los Andes — Modelo de Datos
+
+entity "auth.users" as users {
+  *id : UUID
+  --
+  email : TEXT
+  created_at : TIMESTAMPTZ
+}
+
+entity "roles_usuario" as roles {
+  *id : UUID
+  --
+  *user_id : UUID <<FK>>
+  rol : TEXT
+  created_at : TIMESTAMPTZ
+}
+
+entity "cuentas_ahorro" as ahorro {
+  *id : UUID
+  --
+  *user_id : UUID <<FK>>
+  saldo : NUMERIC(12,2)
+  meta_ahorro : NUMERIC(12,2)
+  tasa_interes : NUMERIC(5,2)
+  fecha_apertura : TIMESTAMPTZ
+}
+
+entity "solicitudes_prestamo" as solicitudes {
+  *id : UUID
+  --
+  *user_id : UUID <<FK>>
+  monto : NUMERIC(12,2)
+  plazo_meses : INTEGER
+  tasa_anual : NUMERIC(6,4)
+  cuota_mensual : NUMERIC(10,2)
+  tipo_credito : TEXT
+  estado : TEXT
+  nivel_aprobacion : TEXT
+  ingreso_neto : NUMERIC(12,2)
+  gasto_familiar : NUMERIC(12,2)
+  rds : NUMERIC(6,2)
+  score : INTEGER
+  motivo_abandono : TEXT
+  created_at : TIMESTAMPTZ
+}
+
+entity "mora_creditos" as mora {
+  *id : UUID
+  --
+  solicitud_id : UUID <<FK>>
+  user_id : UUID <<FK>>
+  dias_mora : INTEGER
+  banda : TEXT
+  monto_deuda : NUMERIC(12,2)
+  estado_gestion : TEXT
+  observaciones : TEXT
+  fecha_ultima_gestion : TIMESTAMPTZ
+  created_at : TIMESTAMPTZ
+}
+
+entity "movimientos_cuenta" as movimientos {
+  *id : UUID
+  --
+  *user_id : UUID <<FK>>
+  tipo : TEXT
+  monto : NUMERIC(12,2)
+  saldo_resultante : NUMERIC(12,2)
+  referencia_id : UUID
+  descripcion : TEXT
+  created_at : TIMESTAMPTZ
+}
+
+users  ||--o| roles       : tiene
+users  ||--o{ ahorro      : posee
+users  ||--o{ solicitudes : solicita
+solicitudes ||--o{ mora   : genera
+solicitudes ||--o{ movimientos : origina
+users ||--o{ movimientos : tiene
+
+@enduml

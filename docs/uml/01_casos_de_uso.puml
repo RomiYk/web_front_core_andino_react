@@ -1,0 +1,50 @@
+@startuml casos_de_uso
+title Los Andes — Casos de Uso
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor Cliente
+actor Asesor
+actor Comite as "Comité"
+actor Riesgos
+actor Gerencia
+
+rectangle "Portal Los Andes" {
+  usecase "Registrarse / Iniciar sesión" as UC1
+  usecase "Ver cuenta de ahorros" as UC2
+  usecase "Solicitar crédito" as UC3
+  usecase "Simular crédito (Calculadora 30 casos)" as UC4
+  usecase "Evaluar solicitud (RDS / Score)" as UC5
+  usecase "Aprobar / Rechazar crédito" as UC6
+  usecase "Desembolsar crédito" as UC7
+  usecase "Consultar bandeja de mora (R1)" as UC8
+  usecase "Registrar gestión de cobranza (R2)" as UC9
+  usecase "Derivar a judicial (R3)" as UC10
+  usecase "Castigar cuenta (R3)" as UC11
+}
+
+Cliente  --> UC1
+Cliente  --> UC2
+Cliente  --> UC3
+Cliente  --> UC4
+
+Asesor   --> UC1
+Asesor   --> UC5
+Asesor   --> UC8
+Asesor   --> UC9
+
+Comite   --> UC1
+Comite   --> UC6
+
+Riesgos  --> UC1
+Riesgos  --> UC8
+Riesgos  --> UC9
+Riesgos  --> UC10
+Riesgos  --> UC11
+
+Gerencia --> UC1
+Gerencia --> UC6
+Gerencia --> UC7
+
+@enduml

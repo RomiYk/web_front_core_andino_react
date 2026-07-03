@@ -1,0 +1,81 @@
+@startuml componentes
+title Los Andes — Arquitectura de Componentes
+
+package "Frontend (React + Vite)" {
+  [Home / Navbar]
+  [LoginModal]
+  [Dashboard]
+  [Core (Panel Asesor)]
+  [Mora]
+  [Calculadora 30 Casos]
+  [AccesoDenegado]
+}
+
+package "Backend (Node.js + Express)" {
+  package "routes" {
+    [authRoutes]
+    [creditoRoutes]
+    [ahorroRoutes]
+    [moraRoutes]
+  }
+  package "middleware" {
+    [authMiddleware]
+  }
+  package "controllers" {
+    [authController]
+    [creditoController]
+    [ahorroController]
+    [moraController]
+  }
+  package "services" {
+    [authService]
+    [creditoService]
+    [ahorroService]
+    [moraService]
+  }
+  package "repositories" {
+    [authRepository]
+  }
+}
+
+database "Supabase" {
+  [authUsers] as "auth.users"
+  [rolesUsuario] as "roles_usuario"
+  [cuentasAhorro] as "cuentas_ahorro"
+  [solicitudesPrestamo] as "solicitudes_prestamo"
+  [moraCreditos] as "mora_creditos"
+}
+
+[Home / Navbar] --> [LoginModal]
+[LoginModal] --> [authRoutes] : POST /login /register
+[Dashboard] --> [creditoRoutes] : GET/POST
+[Dashboard] --> [ahorroRoutes] : GET
+[Core (Panel Asesor)] --> [creditoRoutes]
+[Core (Panel Asesor)] --> [ahorroRoutes]
+[Mora] --> [moraRoutes]
+
+[authRoutes]    --> [authMiddleware]
+[creditoRoutes] --> [authMiddleware]
+[ahorroRoutes]  --> [authMiddleware]
+[moraRoutes]    --> [authMiddleware]
+
+[authRoutes]    --> [authController]
+[authController] --> [authService]
+[authService] --> [authRepository]
+[authRepository] --> [authUsers]
+
+[creditoRoutes] --> [creditoController]
+[creditoController] --> [creditoService]
+[creditoService] --> [solicitudesPrestamo]
+
+[ahorroRoutes] --> [ahorroController]
+[ahorroController] --> [ahorroService]
+[ahorroService] --> [cuentasAhorro]
+
+[moraRoutes] --> [moraController]
+[moraController] --> [moraService]
+[moraService] --> [moraCreditos]
+
+[authMiddleware] --> [rolesUsuario] : consulta rol
+
+@enduml
